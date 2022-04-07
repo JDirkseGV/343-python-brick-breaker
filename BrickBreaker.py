@@ -126,9 +126,7 @@ class Ball(pg.sprite.Sprite):
         if self.rect.y > 600 - self.SIZE:
             self.kill()
             game.takeLife()
-            #self.rect.x -= 1*self.velocity[0]-1
-            #self.rect.y -= 1*self.velocity[1]-1
-            #self.velocity[1] = -self.velocity[1]
+            
 
         for paddle in Ball.paddle:
             if self.rect.top < paddle.rect.bottom and self.rect.right > paddle.rect.left and self.rect.left < paddle.rect.right and self.rect.bottom > paddle.rect.top:
@@ -170,19 +168,21 @@ class Ball(pg.sprite.Sprite):
 class Game:
     def __init__(self):
         pg.init()
+        pg.mixer.music.load("background.wav")
+        pg.mixer.music.play(-1, 0.0)
         
         self.__running = False
         self.score = 0
-        self.lives = 5
+        self.lives = 10
         self.screen = pg.display.set_mode( (800, 600) )
         self.clock = pg.time.Clock()
         self.balls = pg.sprite.Group() #__ to mark private instance variables!
         self.blocks = pg.sprite.Group()
         self.paddle = pg.sprite.Group()
         self.sprites = pg.sprite.RenderUpdates()
-        self.info_text = Overlay(self.screen, 'Score: '+ str(self.score) + '   Lives: ' + str(self.lives),
+        self.infoText = Overlay(self.screen, 'Score: '+ str(self.score) + '   Lives: ' + str(self.lives),
             (0,570), "Arial", 24, (0,0,0), True)
-        self.sprites.add(self.info_text)
+        self.sprites.add(self.infoText)
 
     def run(self):
         while self.__running:
@@ -192,18 +192,33 @@ class Game:
                     self.__running = False
                     pg.quit()
                     exit()
+                if event.type == pg.KEYDOWN:
+                    key = pg.key.get_pressed()
+                    if key[pg.K_1]:             #press key "1" to spawn new ball
+                        self.addBall(Ball())
             # Take events
 
             # Update updateable objects
-            key = pg.key.get_pressed()
+            blocks = 0
+            for block in self.blocks:
+                blocks += 1
             
-            if key[pg.K_1]:
-                self.addBall(Ball())
+            
             self.paddle.update()
             self.balls.update(self)
             
-            self.info_text.printText(
-                'Score: ' + str(self.score) + '   Lives: ' + str(self.lives))    
+            if blocks <= 0:
+                for ball in self.balls:
+                    ball.kill()
+                self.infoText.printText("You Win! Score: " + str(self.score))
+            elif self.lives <= 0:
+                for ball in self.balls:
+                    ball.kill()
+                self.infoText.printText('GAME OVER, EXIT AND RELAUNCH TO RESTART')
+            else:
+                self.infoText.printText(
+                    'Score: ' + str(self.score) + '   Lives: ' + str(self.lives))
+                
             
             
 
@@ -213,7 +228,7 @@ class Game:
             self.blocks.draw(self.screen)
             self.paddle.draw(self.screen)
             self.sprites.draw(self.screen)
-            pg.display.update()
+            
             
             
             
