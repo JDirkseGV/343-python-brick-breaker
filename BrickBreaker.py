@@ -122,7 +122,8 @@ class Ball(pg.sprite.Sprite):
         
         for paddle in Ball.paddle: #Handle paddle collison
             if pg.Rect.colliderect(self.rect, paddle): #using built in collision detection
-                self.rect.x -= (1*self.__velocity[1]+1)
+                self.rect.x -= (1*self.__velocity[0]+2)
+                self.rect.y -= (1*self.__velocity[1]+2)
                 self.__velocity[1] *= -1.03
                 self.__velocity[0] *= 1.03
 
